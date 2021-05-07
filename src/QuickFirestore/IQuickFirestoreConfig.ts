@@ -14,5 +14,6 @@ interface IQuickFirestoreConfig {
     overrideCreateTransform?:(obj:any, documentId:string)=>any
     overrideUpdateTransform?:(obj:any)=>any
     overrideIdCreator?:()=>string
+    
 }
 export default IQuickFirestoreConfig
