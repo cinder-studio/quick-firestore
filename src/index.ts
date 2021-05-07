@@ -1,3 +1,3 @@
-export const FirestoreOverRest = require("./FirestoreOverRest")
-export const QuickFirestore = require("./QuickFirestore")
-export const QuickQuery = require("./QuickQuery")
+export { default as FirestoreOverRest } from "./FirestoreOverRest"
+export { default as QuickFirestore } from "./QuickFirestore"
+export { default as QuickQuery } from "./QuickQuery"
