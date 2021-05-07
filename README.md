@@ -15,7 +15,13 @@ const QuickFs =  = new QuickFirestore({
     }
 })
 
-const result = await QuickFs.query(QuickQuery.collection('mockCollectionUwe').select( 'email', 'name' ).limit(2).prepare())
+const result = await QuickFs.query(
+    QuickQuery
+    .collection('mockCollectionUwe')
+    .select( 'email', 'name' )
+    .limit(2)
+    .prepare()
+)
 ```
 
 It is broken into 3 libraries of value:
