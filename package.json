@@ -6,7 +6,8 @@
   "scripts": {
     "test": "./node_modules/.bin/jest",
     "build": "rm -fr ./lib && tsc",
-    "verify": "npm run build && npm run test"
+    "verify": "npm run build && npm run test",
+    "install": "rm -fr ./lib && tsc"
   },
   "repository": {
     "type": "git",
