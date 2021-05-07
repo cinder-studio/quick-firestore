@@ -3,18 +3,20 @@ QuickFirestore
 
 This project is not yet ready for NPM. You are welcome to use it.
 
-> const QuickFs =  = new QuickFirestore({
->     firestore: {
->         projectName:'mockProjectYx',
->         jwt: {
->             clientEmail:'',
->             privateKeyId:'',
->             privateKey:'',
->         }
->     }
-> })
-> 
-> const result = await QuickFs.query(QuickQuery.collection('mockCollectionUwe').select( 'email', 'name' ).limit(2).prepare())
+```
+const QuickFs =  = new QuickFirestore({
+    firestore: {
+        projectName:'mockProjectYx',
+        jwt: {
+            clientEmail:'',
+            privateKeyId:'',
+            privateKey:'',
+        }
+    }
+})
+
+const result = await QuickFs.query(QuickQuery.collection('mockCollectionUwe').select( 'email', 'name' ).limit(2).prepare())
+```
 
 It is broken into 3 libraries of value:
 
