@@ -1,6 +1,7 @@
-jest.mock('../libs/AxiosExtra')
+import axios from "axios"
+jest.mock('axios')
+const mockedAxios = axios as jest.Mocked<typeof axios>
 
-import { axios } from "../libs/AxiosExtra"
 import FirestoreOverRest, { QuickQuery } from "./index"
 
 const restyFs = new FirestoreOverRest({
@@ -13,6 +14,11 @@ const restyFs = new FirestoreOverRest({
     isUnitTesting:true
 })
 
+// make sure all test counters reset after each test
+////////////////////////////////////////////////////
+afterEach(jest.clearAllMocks)
+////////////////////////////////////////////////////
+
 test('config defaults', async () => {
     expect(restyFs.config.projectName).toBe('mockProjectZy')
     expect(restyFs.config.isUnitTesting).toBe(true)
@@ -23,9 +29,7 @@ test('config defaults', async () => {
 })
 
 test("query", async () => {
-    ;(axios as any).__setJestAxiosRequestFn( async (url, method, data) => {
-        expect(method).toBe('post')
-        expect(url).toBe('https://firestore.googleapis.com/v1/projects/mockProjectZy/databases/(default)/documents:runQuery')
+    mockedAxios.post.mockImplementationOnce( async (url, data) => {
         return {
             "data": [
                 {
@@ -66,6 +70,7 @@ test("query", async () => {
 
     const result = await restyFs.query(QuickQuery.collection('mockCollectionUwe').select( 'email', 'name' ).limit(2).prepare())
 
+    expect(mockedAxios.post).toHaveBeenCalledTimes(1)
     expect(result.length).toBe(2)
     expect(result[0].email).toBe('mockXpe@example.com')
     expect(result[0].name).toBe('Mock XPE')
@@ -74,8 +79,7 @@ test("query", async () => {
 })
 
 test("read", async () => {
-    ;(axios as any).__setJestAxiosRequestFn( async (url, method, data) => {
-        expect(method).toBe('get')
+    mockedAxios.get.mockImplementationOnce( async (url) => {
         expect(url).toBe('https://firestore.googleapis.com/v1/projects/mockProjectZy/databases/(default)/documents/mockCollectionLew/mockIdEwc')
         return {
             "data": {
@@ -99,13 +103,13 @@ test("read", async () => {
         name: 'mockIdEwc'
     })
 
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1)
     expect(result.email).toBe('mockIdEwc@example.com')
     expect(result.name).toBe('Mock EWC')
 })
 
 test("create", async () => {
-    ;(axios as any).__setJestAxiosRequestFn( async (url, method, data) => {
-        expect(method).toBe('post')
+    mockedAxios.post.mockImplementationOnce( async (url, data) => {
         expect(url).toBe('https://firestore.googleapis.com/v1/projects/mockProjectZy/databases/(default)/documents/mockCollectionPuz?documentId=mockIdUre')
 // TODO this is an inaccurate mock of the true response. It may not need to be any more accurate for this test
         return {status:'success'}
@@ -120,13 +124,13 @@ test("create", async () => {
         }
     )
 
+    expect(mockedAxios.post).toHaveBeenCalledTimes(1)
     expect(result.mockField).toBe('mockFieldDataLde')
     expect(result.mockField2).toBe('mockFieldDataUre')
 })
 
 test("update", async () => {
-    ;(axios as any).__setJestAxiosRequestFn( async (url, method, data) => {
-        expect(method).toBe('patch')
+    mockedAxios.patch.mockImplementationOnce( async (url, data) => {
         expect(url).toBe('https://firestore.googleapis.com/v1/projects/mockProjectZy/databases/(default)/documents/mockCollectionOre/mockIdXrs?updateMask.fieldPaths=mockField2&updateMask.fieldPaths=mockField3')
 // TODO this is an inaccurate mock of the true response. It may not need to be any more accurate for this test
         return {status:'success'}
@@ -141,5 +145,6 @@ test("update", async () => {
         }
     )
 
+    expect(mockedAxios.patch).toHaveBeenCalledTimes(1)
     expect(result).toBe('mockIdXrs')
 })

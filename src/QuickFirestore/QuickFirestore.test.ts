@@ -1,6 +1,7 @@
-jest.mock('../libs/AxiosExtra')
+import axios from "axios"
+jest.mock('axios')
+const mockedAxios = axios as jest.Mocked<typeof axios>
 
-import { axios } from "../libs/AxiosExtra"
 import QuickFirestore, { QuickQuery } from "./index"
 
 const quickFs = new QuickFirestore({
@@ -14,6 +15,11 @@ const quickFs = new QuickFirestore({
         isUnitTesting:true,
     }
 })
+
+// make sure all test counters reset after each test
+////////////////////////////////////////////////////
+afterEach(jest.clearAllMocks)
+////////////////////////////////////////////////////
 
 test('config defaults', async () => {
     expect(quickFs.config.firestore.projectName).toBe('mockProjectYx')
@@ -31,8 +37,7 @@ test('config defaults', async () => {
 })
 
 test("query", async () => {
-    ;(axios as any).__setJestAxiosRequestFn( async (url, method, data) => {
-        expect(method).toBe('post')
+    mockedAxios.post.mockImplementationOnce( async (url, data) => {
         expect(url).toBe('https://firestore.googleapis.com/v1/projects/mockProjectYx/databases/(default)/documents:runQuery')
         return {
             "data": [
@@ -74,6 +79,7 @@ test("query", async () => {
 
     const result = await quickFs.query(QuickQuery.collection('mockCollectionUwe').select( 'email', 'name' ).limit(2).prepare())
 
+    expect(mockedAxios.post).toHaveBeenCalledTimes(1)
     expect(result.length).toBe(2)
     expect(result[0].email).toBe('mockXpe@example.com')
     expect(result[0].name).toBe('Mock XPE')
@@ -82,7 +88,6 @@ test("query", async () => {
 })
 
 test("query validation", async () => {
-
     const errors = []
     try {
         await quickFs.query(QuickQuery.collection('mockCollectionUwe').limit(2).prepare())
@@ -94,8 +99,8 @@ test("query validation", async () => {
 })
 
 test("read", async () => {
-    ;(axios as any).__setJestAxiosRequestFn( async (url, method, data) => {
-        expect(method).toBe('get')
+    mockedAxios.get.mockImplementationOnce( async (url) => {
+        console.log('get called', url)
         expect(url).toBe('https://firestore.googleapis.com/v1/projects/mockProjectYx/databases/(default)/documents/mockCollectionLew/mockIdEwc')
         return {
             "data": {
@@ -119,13 +124,13 @@ test("read", async () => {
         name: 'mockIdEwc'
     })
 
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1)
     expect(result.email).toBe('mockIdEwc@example.com')
     expect(result.name).toBe('Mock EWC')
 })
 
 test("create with default transform", async () => {
-    ;(axios as any).__setJestAxiosRequestFn( async (url, method, data) => {
-        expect(method).toBe('post')
+    mockedAxios.post.mockImplementationOnce( async (url, data) => {
         expect(url).toBe('https://firestore.googleapis.com/v1/projects/mockProjectYx/databases/(default)/documents/mockCollectionPuz?documentId=mockIdMur')
 // TODO this is an inaccurate mock of the true response. It may not need to be any more accurate for this test
         return {status:'success'}
@@ -140,6 +145,7 @@ test("create with default transform", async () => {
         'mockIdMur'
     )
 
+    expect(mockedAxios.post).toHaveBeenCalledTimes(1)
     expect(result.mockField).toBe('mockFieldDataLde')
     expect(result.mockField2).toBe('mockFieldDataUre')
     expect(result.id).toBe('mockIdMur')
@@ -149,8 +155,7 @@ test("create with default transform", async () => {
 })
 
 test("create with default ID creation", async () => {
-    ;(axios as any).__setJestAxiosRequestFn( async (url, method, data) => {
-        expect(method).toBe('post')
+    mockedAxios.post.mockImplementationOnce( async (url, data) => {
         expect(url).not.toBe('https://firestore.googleapis.com/v1/projects/mockProjectYx/databases/(default)/documents/mockCollectionPuz?documentId=mockIdMur')
         expect(url.startsWith('https://firestore.googleapis.com/v1/projects/mockProjectYx/databases/(default)/documents/mockCollectionPuz?documentId=')).toBe(true)
 // TODO this is an inaccurate mock of the true response. It may not need to be any more accurate for this test
@@ -165,6 +170,7 @@ test("create with default ID creation", async () => {
         }
     )
 
+    expect(mockedAxios.post).toHaveBeenCalledTimes(1)
     expect(result.mockField).toBe('mockFieldDataLde')
     expect(result.mockField2).toBe('mockFieldDataUre')
     expect(result.id).not.toBe('mockIdMur')
@@ -175,8 +181,7 @@ test("create with default ID creation", async () => {
 })
 
 test("update with default transform", async () => {
-    ;(axios as any).__setJestAxiosRequestFn( async (url, method, data) => {
-        expect(method).toBe('patch')
+    mockedAxios.patch.mockImplementationOnce( async (url, data) => {
         expect(url).toBe('https://firestore.googleapis.com/v1/projects/mockProjectYx/databases/(default)/documents/mockCollectionOre/mockIdXrs?updateMask.fieldPaths=mockField2&updateMask.fieldPaths=mockField3&updateMask.fieldPaths=updatedAt')
         expect(data.fields.updatedAt.integerValue > 0).toBe(true)
 // TODO this is an inaccurate mock of the true response. It may not need to be any more accurate for this test
@@ -192,5 +197,6 @@ test("update with default transform", async () => {
         }
     )
 
+    expect(mockedAxios.patch).toHaveBeenCalledTimes(1)
     expect(result).toBe('mockIdXrs')
 })
