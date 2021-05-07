@@ -2,7 +2,7 @@
   "name": "@cinder-studio/quick-firestore",
   "version": "1.0.0",
   "description": "Google supplied Firestore libraries are slow. This is a fast one.",
-  "main": "index.js",
+  "main": "src/index.ts",
   "scripts": {
     "test": "./node_modules/.bin/jest",
     "build": "rm -fr ./lib && tsc",
