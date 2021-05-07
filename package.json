@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/jest",
-    "build": "rm -fr ./lib && tsc"
+    "build": "rm -fr ./lib && tsc",
+    "verify": "npm run build && npm run test"
   },
   "repository": {
     "type": "git",
