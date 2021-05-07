@@ -1,0 +1,38 @@
+{
+  "name": "@cinder-studio/quick-firestore",
+  "version": "1.0.0",
+  "description": "Google supplied Firestore libraries are slow. This is a fast one.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cinder-studio/quick-firestore.git"
+  },
+  "keywords": [
+    "google",
+    "firestore",
+    "firebase",
+    "cloud"
+  ],
+  "author": "Cinder Studio Inc.",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cinder-studio/quick-firestore/issues"
+  },
+  "homepage": "https://github.com/cinder-studio/quick-firestore#readme",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "jsonwebtoken": "^8.5.1",
+    "querystring": "^0.2.1",
+    "short-uuid": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.23",
+    "jest": "^26.6.3",
+    "ts-jest": "^26.5.6",
+    "tslint": "^6.1.3",
+    "typescript": "^4.2.4"
+  }
+}

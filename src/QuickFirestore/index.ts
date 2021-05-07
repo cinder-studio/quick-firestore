@@ -1,0 +1,139 @@
+import FirestoreOverRest from "../FirestoreOverRest"
+import * as short from "short-uuid"
+
+const defaultConfig:IQuickFirestoreConfig = {
+
+    // firestore config
+
+    firestore: {
+        projectName:'',
+        databaseName:'(default)',
+        apiUrl:'https://firestore.googleapis.com',
+        jwt: {
+            clientEmail:'',
+            privateKeyId:'',
+            privateKey:'',
+        },
+        isUnitTesting:false,
+        softLogErrors:false,
+    },
+
+    // logging control
+
+    logger: console,
+
+    // validation tools
+
+    overrideQueryValidator:(queryObj:any) : string => {
+        const query = queryObj
+        if(!query.select || !query.select.fields || query.select.fields.length < 1) {
+            throw new Error('every quickread query must have a "select" projection')
+        }
+        if(!query.from || query.from.length !== 1) {
+            throw new Error('every quickread query must have a singular "from" value')
+        }
+        if(!query.limit) {
+            query.limit = 160
+        }
+        return query
+    },
+    overrideCreateTransform:(obj:any, documentId:string)=>({
+        ...obj,
+        id: documentId,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        deletedAt: null
+    }),
+    overrideUpdateTransform:(obj:any)=>({
+        ...obj,
+        updatedAt: Date.now()
+    }),
+    overrideIdCreator?:()=>(
+        short(short.constants.flickrBase58).new()
+    )
+}
+
+class QuickFirestore {
+
+    config:IQuickFirestoreConfig
+    restyFirestore:FirestoreOverRest
+
+    constructor(config:IQuickFirestoreConfig) {
+        // keep this constructor as thin and fast as possible
+
+        // setup the config
+        this.config = {
+            firestore: config.firestore,
+            logger: defaultConfig.logger,
+            overrideQueryValidator: defaultConfig.overrideQueryValidator,
+            overrideCreateTransform: defaultConfig.overrideCreateTransform,
+            overrideUpdateTransform: defaultConfig.overrideCreateTransform,
+        }
+        if(config.logger) { this.config.logger = config.logger }
+        if(config.overrideQueryValidator) { this.config.overrideQueryValidator = config.overrideQueryValidator }
+        if(config.overrideCreateTransform) { this.config.overrideCreateTransform = config.overrideCreateTransform }
+        if(config.overrideUpdateTransform) { this.config.overrideUpdateTransform = config.overrideUpdateTransform }
+        if(config.overrideIdCreator) { this.config.overrideIdCreator = config.overrideIdCreator }
+
+        this.restyFirestore = new FirestoreOverRest(this.config.firestore, this.config.logger)
+    }
+
+    public read = this.restyFirestore.read
+
+    public create = async (collection:string, documentObj:any, overrideId?:string): Promise<any> => {
+        // decide on the document id
+        const documentId = overrideId ? overrideId : this.config.overrideIdCreator()
+        // transform /enforce create data format
+        const documentData = this.config.overrideCreateTransform(documentObj)
+        // create and return
+        return await this.restyFirestore.create(collection, documentId, documentData)
+    }
+
+    public update = async (collection:string, id:string, documentObj:any): Promise<any> => {
+        // transform /enforce update data format
+        const documentData = this.config.overrideUpdateTransform(documentObj)
+        // create and return
+        return await this.restyFirestore.update(collection, id, documentData)
+    }
+
+    public query = async (queryObj:any): Promise<any> => {
+        // validate
+        const validatedQueryObj = this.config.overrideQueryValidator(queryObj)
+        //execute
+        return await this.restyFirestore.query(validatedQueryObj)
+    }
+
+    public queryOne = async (queryObj:any): Promise<any> => {
+        // validate
+        const validatedQueryObj = this.config.overrideQueryValidator(queryObj)
+        // ensure the limit is set to 1
+        validatedQueryObj.limit = 1
+        // now run the query
+        const results = await this.restyFirestore.query(validatedQueryObj)
+        if(results && results.length > 0) {
+            return results[0]
+        }
+        return null
+    }
+
+// TODO review this deeper
+///////////////////////////
+//        The intention here is it should hopefully take advantage of query stacking technology @ google but i'm not sure how that works
+//        with axios and google libraries. We'll need to study this further
+///////////////////////////
+    /**
+        Queries
+
+        Run a set of standardized queries at the same time.
+    */
+    public queries = (queryObjs:any[]) : Promise<any[]> => {
+        // validate
+        const validatedQueryObjs = queryObjs.map(queryObj=>this.config.overrideQueryValidator(queryObj))
+        //execute
+        return Promise.all(validatedQueryObjs.map(validatedQueryObj=>this.restyFirestore.query(validatedQueryObj)))
+    }
+
+    public QuickQuery = this.restyFirestore.QuickQuery
+
+}
+export default QuickFirestore

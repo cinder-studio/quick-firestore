@@ -1,0 +1,12 @@
+# test development directory for local work only
+_test
+
+# osx
+.DS_Store
+.vscode
+
+# nodejs
+node_modules
+
+# logs
+*.log
