@@ -1,4 +1,4 @@
-import IFirestoreOverRestConfig from "../IFirestoreOverRestConfig"
+import IFirestoreOverRestConfig from "../FirestoreOverRest/IFirestoreOverRestConfig"
 import ILogger from "../ILogger"
 
 interface IQuickFirestoreConfig {

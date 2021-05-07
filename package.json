@@ -4,7 +4,8 @@
   "description": "Google supplied Firestore libraries are slow. This is a fast one.",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/jest"
+    "test": "./node_modules/.bin/jest",
+    "build": "rm -fr ./lib && tsc"
   },
   "repository": {
     "type": "git",

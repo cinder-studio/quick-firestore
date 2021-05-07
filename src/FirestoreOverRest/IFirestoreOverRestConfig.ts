@@ -14,8 +14,8 @@ interface IFirestoreOverRestConfig {
     databaseName?:string
     apiUrl?:string
     overrideAxiosConfig?:any
-    isUnitTesting?:bool
-    softLogErrors?:bool
+    isUnitTesting?:boolean
+    softLogErrors?:boolean
 
 }
 export default IFirestoreOverRestConfig
