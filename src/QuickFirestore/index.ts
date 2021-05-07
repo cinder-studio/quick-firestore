@@ -1,5 +1,7 @@
 import FirestoreOverRest from "../FirestoreOverRest"
+import IQuickFirestoreConfig from "./IQuickFirestoreConfig"
 import * as short from "short-uuid"
+import QuickQueryBuilder from "../QuickQuery"
 
 const defaultConfig:IQuickFirestoreConfig = {
 
@@ -24,7 +26,7 @@ const defaultConfig:IQuickFirestoreConfig = {
 
     // validation tools
 
-    overrideQueryValidator:(queryObj:any) : string => {
+    overrideQueryValidator:(queryObj:any) : any => {
         const query = queryObj
         if(!query.select || !query.select.fields || query.select.fields.length < 1) {
             throw new Error('every quickread query must have a "select" projection')
@@ -48,15 +50,15 @@ const defaultConfig:IQuickFirestoreConfig = {
         ...obj,
         updatedAt: Date.now()
     }),
-    overrideIdCreator?:()=>(
+    overrideIdCreator:()=>(
         short(short.constants.flickrBase58).new()
     )
 }
 
 class QuickFirestore {
 
-    config:IQuickFirestoreConfig
-    restyFirestore:FirestoreOverRest
+    public config:IQuickFirestoreConfig
+    public restyFirestore:FirestoreOverRest
 
     constructor(config:IQuickFirestoreConfig) {
         // keep this constructor as thin and fast as possible
@@ -67,7 +69,8 @@ class QuickFirestore {
             logger: defaultConfig.logger,
             overrideQueryValidator: defaultConfig.overrideQueryValidator,
             overrideCreateTransform: defaultConfig.overrideCreateTransform,
-            overrideUpdateTransform: defaultConfig.overrideCreateTransform,
+            overrideUpdateTransform: defaultConfig.overrideUpdateTransform,
+            overrideIdCreator: defaultConfig.overrideIdCreator,
         }
         if(config.logger) { this.config.logger = config.logger }
         if(config.overrideQueryValidator) { this.config.overrideQueryValidator = config.overrideQueryValidator }
@@ -76,15 +79,18 @@ class QuickFirestore {
         if(config.overrideIdCreator) { this.config.overrideIdCreator = config.overrideIdCreator }
 
         this.restyFirestore = new FirestoreOverRest(this.config.firestore, this.config.logger)
+        this.config.firestore = this.restyFirestore.config
     }
 
-    public read = this.restyFirestore.read
+    public read = async (queryObj:{collection:string,name:string,mask?:any}): Promise<any> => {
+        return await this.restyFirestore.read(queryObj)
+    }
 
     public create = async (collection:string, documentObj:any, overrideId?:string): Promise<any> => {
         // decide on the document id
         const documentId = overrideId ? overrideId : this.config.overrideIdCreator()
         // transform /enforce create data format
-        const documentData = this.config.overrideCreateTransform(documentObj)
+        const documentData = this.config.overrideCreateTransform(documentObj, documentId)
         // create and return
         return await this.restyFirestore.create(collection, documentId, documentData)
     }
@@ -133,7 +139,8 @@ class QuickFirestore {
         return Promise.all(validatedQueryObjs.map(validatedQueryObj=>this.restyFirestore.query(validatedQueryObj)))
     }
 
-    public QuickQuery = this.restyFirestore.QuickQuery
-
 }
+
+export const QuickQuery = QuickQueryBuilder
+
 export default QuickFirestore

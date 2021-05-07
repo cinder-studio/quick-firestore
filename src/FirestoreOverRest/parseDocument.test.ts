@@ -1,6 +1,6 @@
 import parseDocument from "./parseDocument"
 
-const exampleObjectResponse = {
+export const exampleObjectResponse = {
   "data": [
     {
       "document": {

@@ -8,38 +8,36 @@ import typedValues from "./typedValues"
 
 const defaultConfig:IFirestoreOverRestConfig = {
     projectName:'',
-    databaseName:'(default)',
-    apiUrl:'https://firestore.googleapis.com',
     jwt: {
         clientEmail:'',
         privateKeyId:'',
         privateKey:'',
     },
-    options: {
-        isUnitTesting:false,
-        softLogErrors:false
-    }
+    databaseName:'(default)',
+    apiUrl:'https://firestore.googleapis.com',
+    isUnitTesting:false,
+    softLogErrors:false,
 }
 
-class QuickFirestore {
+class FirestoreOverRest {
 
-    config:IFirestoreOverRestConfig
-    logger:ILogger
-    axios:any // TODO is there a better type?
+    public config:IFirestoreOverRestConfig
+    public logger:ILogger
+    public axios:any // TODO is there a better type?
 
-    constructor(config:IFirestoreOverRestConfig, logger:ILogger) {
+    constructor(config:IFirestoreOverRestConfig, logger?:ILogger) {
         // keep this constructor as thin and fast as possible
 
         // setup the config
         this.config = {
-            ...config,
             ...defaultConfig,
+            ...config,
             jwt: {
                 ...defaultConfig.jwt,
                 ...config.jwt
             }
         }
-        this.logger = logger ? logger : console }
+        this.logger = logger ? logger : console
 
         // setup logging
 
@@ -55,6 +53,7 @@ class QuickFirestore {
 
         Run a query without any additional validations. Trust the caller.
     */
+// TODO should we build this into a type?
     public query = async (queryObj:any): Promise<any> => {
 
         const { token, startTs, tokenCreatedTs } = firestoreToken(this.config)
@@ -69,6 +68,7 @@ class QuickFirestore {
             )
 
             let resultData = []
+// TODO I can't remember why we did this
             if(result.data.length === 1 && Object.keys(result.data[0]).length === 1) {
                 resultData = []
             }
@@ -121,7 +121,7 @@ class QuickFirestore {
 
         Run a read call without any additional validations. Trust the caller.
     */
-    public read = async (queryObj:any): Promise<any> => {
+    public read = async (queryObj:{collection:string,name:string,mask?:any}): Promise<any> => {
 
         if(!queryObj.collection || !queryObj.name) {
             return null
@@ -137,9 +137,9 @@ class QuickFirestore {
             if(false && queryObj.mask) { queryMask = '?mask=TODO' }
 ////////////////////
 
-            const getUrl = `${this.config.firestore.apiUrl}/v1/projects/${this.config.firestore.projectName}/databases/${this.config.firestore.databaseName}/documents/${queryObj.collection}/${queryObj.name}${queryMask}`
+            const getUrl = `${this.config.apiUrl}/v1/projects/${this.config.projectName}/databases/${this.config.databaseName}/documents/${queryObj.collection}/${queryObj.name}${queryMask}`
 
-            const result = await axios.get(
+            const result = await this.axios.get(
                 getUrl,
                 { headers: { Authorization: `Bearer ${token}` } }
             )
@@ -198,7 +198,7 @@ class QuickFirestore {
         try {
 
             await this.axios.post(
-                `${this.config.firestore.apiUrl}/v1/projects/${this.config.firestore.projectName}/databases/${this.config.firestore.databaseName}/documents/${collection}?documentId=${documentId}`,
+                `${this.config.apiUrl}/v1/projects/${this.config.projectName}/databases/${this.config.databaseName}/documents/${collection}?documentId=${documentId}`,
                 typedValues.encodeDocument(documentId, documentObj),
                 { headers: { Authorization: `Bearer ${token}` } }
             )
@@ -208,7 +208,7 @@ class QuickFirestore {
             const queryFinishedTs = Date.now()
 
             if((queryFinishedTs - startTs) > 1200) {
-                this.config.warn('long QuickFirestore create', `${queryFinishedTs - startTs}ms`, {
+                this.logger.warn('long QuickFirestore create', `${queryFinishedTs - startTs}ms`, {
                     tokenDelayMs: tokenCreatedTs - startTs,
                     queryDelayMs: queryFinishedTs - tokenCreatedTs
                 }, documentId, JSON.stringify(documentObj))
@@ -220,7 +220,7 @@ class QuickFirestore {
         catch (e) {
             const queryFinishedTs = Date.now()
             if(e.response) {
-                this.config.error({
+                this.logger.error({
                     statusCode: e.response.status,
                     message: e.response.statusText,
                     callType: 'executeCreateBlindly',
@@ -229,7 +229,7 @@ class QuickFirestore {
                 }, e.response.data)
             }
             else {
-                this.config.error({
+                this.logger.error({
                     statusCode: '500',
                     message: 'please check server logs for details of this error',
                     tokenDelayMs: tokenCreatedTs - startTs,
@@ -254,10 +254,10 @@ class QuickFirestore {
         try {
 
             const updateMaskQueryString = typedValues.encodeUpdateMask(documentObj, {asQueryString:true})
-            const url = `${this.config.firestore.projectName}/databases/${this.config.firestore.databaseName}/documents/${collection}/${id}?${updateMaskQueryString}`
+            const url = `${this.config.apiUrl}/v1/projects/${this.config.projectName}/databases/${this.config.databaseName}/documents/${collection}/${id}?${updateMaskQueryString}`
             const data = typedValues.encodeDocument(id, documentObj)
 
-            await axios.patch(
+            await this.axios.patch(
                 url,
                 data,
                 { headers: { Authorization: `Bearer ${token}` } }
@@ -268,7 +268,7 @@ class QuickFirestore {
             const queryFinishedTs = Date.now()
 
             if((queryFinishedTs - startTs) > 1200) {
-                this.config.warn('long QuickFirestore update', `${queryFinishedTs - startTs}ms`, {
+                this.logger.warn('long QuickFirestore update', `${queryFinishedTs - startTs}ms`, {
                     tokenDelayMs: tokenCreatedTs - startTs,
                     queryDelayMs: queryFinishedTs - tokenCreatedTs
                 }, collection, JSON.stringify(documentObj))
@@ -279,7 +279,7 @@ class QuickFirestore {
         catch (e) {
             const queryFinishedTs = Date.now()
             if(e.response) {
-                this.config.error({
+                this.logger.error({
                     statusCode: e.response.status,
                     message: e.response.statusText,
                     callType: 'executeUpdateBlindly',
@@ -288,7 +288,7 @@ class QuickFirestore {
                 }, e.response.data)
             }
             else {
-                this.config.error({
+                this.logger.error({
                     statusCode: '500',
                     message: 'please check server logs for details of this error',
                     tokenDelayMs: tokenCreatedTs - startTs,
@@ -300,4 +300,7 @@ class QuickFirestore {
     }
 
 }
-export default QuickFirestore
+
+export const QuickQuery = QuickQueryBuilder
+
+export default FirestoreOverRest

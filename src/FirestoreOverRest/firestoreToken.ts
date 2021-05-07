@@ -1,9 +1,9 @@
-import IFirestoreOverRestConfig from "../IFirestoreOverRestConfig"
+import IFirestoreOverRestConfig from "./IFirestoreOverRestConfig"
 
 export interface IFirestoreToken {
-    token: token,
-    startTs: startTs,
-    tokenCreatedTs: tokenCreatedTs
+    token: string,
+    startTs: number,
+    tokenCreatedTs: number
 }
 
 // runtime vars
@@ -18,7 +18,7 @@ export default (config:IFirestoreOverRestConfig) : IFirestoreToken => {
 
         let token = null
 
-        if(config.isUnitTesting === "true") {
+        if(config.isUnitTesting) {
             token = 'mock-api-token'
         }
         else {
@@ -28,7 +28,7 @@ export default (config:IFirestoreOverRestConfig) : IFirestoreToken => {
             }
             token = googleJwt.sign({
                 clientEmail: config.jwt.clientEmail,
-                audience: `${config.firestore.apiUrl}/`,
+                audience: `${config.apiUrl}/`,
                 privateKeyId: config.jwt.privateKeyId,
                 privateKeyStr: config.jwt.privateKey,
                 expiresInSeconds: 10
