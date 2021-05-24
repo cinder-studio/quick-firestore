@@ -10,7 +10,7 @@ interface IQuickFirestoreConfig {
     // optional
 
     logger?: ILogger,
-    overrideQueryValidator?:(queryObj:any)=>any
+    overrideQueryValidator?:(queryObj:any, options?:any)=>any
     overrideCreateTransform?:(obj:any, documentId:string)=>any
     overrideUpdateTransform?:(obj:any)=>any
     overrideIdCreator?:()=>string

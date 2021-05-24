@@ -26,9 +26,9 @@ const defaultConfig:IQuickFirestoreConfig = {
 
     // validation tools
 
-    overrideQueryValidator:(queryObj:any) : any => {
+    overrideQueryValidator:(queryObj:any, options?:any) : any => {
         const query = queryObj
-        if(!query.select || !query.select.fields || query.select.fields.length < 1) {
+        if((!query.select || !query.select.fields || query.select.fields.length < 1) && (!options || !options.skipSelectValidation)) {
             throw new Error('every quickread query must have a "select" projection')
         }
         if(!query.from || query.from.length !== 1) {
@@ -102,16 +102,16 @@ class QuickFirestore {
         return await this.restyFirestore.update(collection, id, documentData)
     }
 
-    public query = async (queryObj:any): Promise<any> => {
+    public query = async (queryObj:any, options?:any): Promise<any> => {
         // validate
-        const validatedQueryObj = this.config.overrideQueryValidator(queryObj)
+        const validatedQueryObj = this.config.overrideQueryValidator(queryObj, options)
         //execute
         return await this.restyFirestore.query(validatedQueryObj)
     }
 
-    public queryOne = async (queryObj:any): Promise<any> => {
+    public queryOne = async (queryObj:any, options?:any): Promise<any> => {
         // validate
-        const validatedQueryObj = this.config.overrideQueryValidator(queryObj)
+        const validatedQueryObj = this.config.overrideQueryValidator(queryObj, options)
         // ensure the limit is set to 1
         validatedQueryObj.limit = 1
         // now run the query
@@ -132,9 +132,9 @@ class QuickFirestore {
 
         Run a set of standardized queries at the same time.
     */
-    public queries = (queryObjs:any[]) : Promise<any[]> => {
+    public queries = (queryObjs:any[], options?:any) : Promise<any[]> => {
         // validate
-        const validatedQueryObjs = queryObjs.map(queryObj=>this.config.overrideQueryValidator(queryObj))
+        const validatedQueryObjs = queryObjs.map(queryObj=>this.config.overrideQueryValidator(queryObj, options))
         //execute
         return Promise.all(validatedQueryObjs.map(validatedQueryObj=>this.restyFirestore.query(validatedQueryObj)))
     }

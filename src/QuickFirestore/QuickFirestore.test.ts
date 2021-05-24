@@ -98,6 +98,43 @@ test("query validation", async () => {
     expect(errors[0].message).toBe('every quickread query must have a "select" projection')
 })
 
+test("query validation override", async () => {
+    mockedAxios.post.mockImplementationOnce( async (url, data) => {
+        return {
+            "data": [
+                {
+                    "document": {
+                        "name": "projects/mockProjectYx/databases/(default)/documents/mockCollectionUwe/34f3aaf4aw4wa",
+                        "fields": {
+                            "email": {
+                                "stringValue": "mockNzt@example.com"
+                            },
+                            "name": {
+                                "stringValue": "Mock NZT"
+                            },
+                        },
+                        "createTime": "1970-01-01T00:00:01.000000Z",
+                        "updateTime": "1970-01-01T00:00:01.000000Z"
+                    },
+                    "readTime": "1970-01-01T00:00:01.000000Z"
+                }
+            ]
+        }
+    })
+
+    const errors = []
+    let results = null
+    try {
+        results = await quickFs.query(QuickQuery.collection('mockCollectionUwe').limit(2).prepare(), {skipSelectValidation:true})
+    } catch (e) {
+        errors.push(e)
+    }
+
+    expect(errors.length).toBe(0)
+    expect(results).not.toBe(null)
+    expect(results[0].name).toBe('Mock NZT')
+})
+
 test("read", async () => {
     mockedAxios.get.mockImplementationOnce( async (url) => {
         console.log('get called', url)
