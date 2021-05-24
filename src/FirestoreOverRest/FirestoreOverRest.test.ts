@@ -2,6 +2,7 @@ import axios from "axios"
 jest.mock('axios')
 const mockedAxios = axios as jest.Mocked<typeof axios>
 
+import { buildTestFsDocument } from "./testTools"
 import FirestoreOverRest, { QuickQuery } from "./index"
 
 const restyFs = new FirestoreOverRest({
@@ -32,38 +33,20 @@ test("query", async () => {
     mockedAxios.post.mockImplementationOnce( async (url, data) => {
         return {
             "data": [
-                {
-                    "document": {
-                        "name": "projects/mockProjectZy/databases/(default)/documents/mockCollectionUwe/34f3aaf4aw4wa",
-                        "fields": {
-                            "email": {
-                                "stringValue": "mockXpe@example.com"
-                            },
-                            "name": {
-                                "stringValue": "Mock XPE"
-                            },
-                        },
-                        "createTime": "1970-01-01T00:00:01.000000Z",
-                        "updateTime": "1970-01-01T00:00:01.000000Z"
-                    },
-                    "readTime": "1970-01-01T00:00:01.000000Z"
-                },
-                {
-                    "document": {
-                        "name": "projects/mockProjectZy/databases/(default)/documents/mockCollectionUwe/34f3aaf4aw4wa",
-                        "fields": {
-                            "email": {
-                                "stringValue": "mockTer@example.com"
-                            },
-                            "name": {
-                                "stringValue": "Mock TER"
-                            },
-                        },
-                        "createTime": "1970-01-01T00:00:01.000000Z",
-                        "updateTime": "1970-01-01T00:00:01.000000Z"
-                    },
-                    "readTime": "1970-01-01T00:00:01.000000Z"
-                }
+                buildTestFsDocument({
+                    documentName: "projects/mockProjectZy/databases/(default)/documents/mockCollectionUwe/34f3aaf4aw4wa",
+                    fields: {
+                        email: 'mockXpe@example.com',
+                        name: 'Mock XPE'
+                    }
+                }),
+                buildTestFsDocument({
+                    documentName: "projects/mockProjectZy/databases/(default)/documents/mockCollectionUwe/34f3aaf4aw4wa",
+                    fields: {
+                        email: 'mockTer@example.com',
+                        name: 'Mock TER'
+                    }
+                })
             ]
         }
     })
@@ -82,19 +65,13 @@ test("read", async () => {
     mockedAxios.get.mockImplementationOnce( async (url) => {
         expect(url).toBe('https://firestore.googleapis.com/v1/projects/mockProjectZy/databases/(default)/documents/mockCollectionLew/mockIdEwc')
         return {
-            "data": {
-                "name": "projects/mockProjectZy/databases/(default)/documents/mockCollectionLew/mockIdEwc",
-                "fields": {
-                    "email": {
-                        "stringValue": "mockIdEwc@example.com"
-                    },
-                    "name": {
-                        "stringValue": "Mock EWC"
-                    },
-                },
-                "createTime": "1970-01-01T00:00:01.000000Z",
-                "updateTime": "1970-01-01T00:00:01.000000Z"
-            }
+            "data": buildTestFsDocument({
+                documentName: "projects/mockProjectZy/databases/(default)/documents/mockCollectionLew/mockIdEwc",
+                fields: {
+                    email: 'mockIdEwc@example.com',
+                    name: 'Mock EWC'
+                }
+            }).document
         }
     })
 

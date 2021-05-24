@@ -2,6 +2,7 @@ import axios from "axios"
 jest.mock('axios')
 const mockedAxios = axios as jest.Mocked<typeof axios>
 
+import { buildTestFsDocument } from "../FirestoreOverRest/testTools"
 import QuickFirestore, { QuickQuery } from "./index"
 
 const quickFs = new QuickFirestore({
@@ -41,38 +42,20 @@ test("query", async () => {
         expect(url).toBe('https://firestore.googleapis.com/v1/projects/mockProjectYx/databases/(default)/documents:runQuery')
         return {
             "data": [
-                {
-                    "document": {
-                        "name": "projects/mockProjectYx/databases/(default)/documents/mockCollectionUwe/34f3aaf4aw4wa",
-                        "fields": {
-                            "email": {
-                                "stringValue": "mockXpe@example.com"
-                            },
-                            "name": {
-                                "stringValue": "Mock XPE"
-                            },
-                        },
-                        "createTime": "1970-01-01T00:00:01.000000Z",
-                        "updateTime": "1970-01-01T00:00:01.000000Z"
-                    },
-                    "readTime": "1970-01-01T00:00:01.000000Z"
-                },
-                {
-                    "document": {
-                        "name": "projects/mockProjectYx/databases/(default)/documents/mockCollectionUwe/34f3aaf4aw4wa",
-                        "fields": {
-                            "email": {
-                                "stringValue": "mockTer@example.com"
-                            },
-                            "name": {
-                                "stringValue": "Mock TER"
-                            },
-                        },
-                        "createTime": "1970-01-01T00:00:01.000000Z",
-                        "updateTime": "1970-01-01T00:00:01.000000Z"
-                    },
-                    "readTime": "1970-01-01T00:00:01.000000Z"
-                }
+                buildTestFsDocument({
+                    documentName: "projects/mockProjectYx/databases/(default)/documents/mockCollectionUwe/34f3aaf4aw4wa",
+                    fields: {
+                        email: "mockXpe@example.com",
+                        name: "Mock XPE"
+                    }
+                }),
+                buildTestFsDocument({
+                    documentName: "projects/mockProjectYx/databases/(default)/documents/mockCollectionUwe/34f3aaf4aw4wa",
+                    fields: {
+                        email: "mockTer@example.com",
+                        name: "Mock TER"
+                    }
+                })
             ]
         }
     })
@@ -102,22 +85,13 @@ test("query validation override", async () => {
     mockedAxios.post.mockImplementationOnce( async (url, data) => {
         return {
             "data": [
-                {
-                    "document": {
-                        "name": "projects/mockProjectYx/databases/(default)/documents/mockCollectionUwe/34f3aaf4aw4wa",
-                        "fields": {
-                            "email": {
-                                "stringValue": "mockNzt@example.com"
-                            },
-                            "name": {
-                                "stringValue": "Mock NZT"
-                            },
-                        },
-                        "createTime": "1970-01-01T00:00:01.000000Z",
-                        "updateTime": "1970-01-01T00:00:01.000000Z"
-                    },
-                    "readTime": "1970-01-01T00:00:01.000000Z"
-                }
+                buildTestFsDocument({
+                    documentName: "projects/mockProjectYx/databases/(default)/documents/mockCollectionUwe/34f3aaf4aw4wa",
+                    fields: {
+                        email: "mockNzt@example.com",
+                        name: "Mock NZT"
+                    }
+                })
             ]
         }
     })
@@ -140,19 +114,13 @@ test("read", async () => {
         console.log('get called', url)
         expect(url).toBe('https://firestore.googleapis.com/v1/projects/mockProjectYx/databases/(default)/documents/mockCollectionLew/mockIdEwc')
         return {
-            "data": {
-                "name": "projects/mockProjectYx/databases/(default)/documents/mockCollectionLew/mockIdEwc",
-                "fields": {
-                    "email": {
-                        "stringValue": "mockIdEwc@example.com"
-                    },
-                    "name": {
-                        "stringValue": "Mock EWC"
-                    },
-                },
-                "createTime": "1970-01-01T00:00:01.000000Z",
-                "updateTime": "1970-01-01T00:00:01.000000Z"
-            }
+            "data": buildTestFsDocument({
+                documentName: "projects/mockProjectYx/databases/(default)/documents/mockCollectionLew/mockIdEwc",
+                fields: {
+                    email: "mockIdEwc@example.com",
+                    name: "Mock EWC"
+                }
+            }).document
         }
     })
 
