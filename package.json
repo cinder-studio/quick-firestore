@@ -5,9 +5,9 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "./node_modules/.bin/jest",
-    "build": "rm -fr ./lib && tsc",
+    "build": "rm -fr ./lib && ./node_modules/.bin/tsc",
     "verify": "npm run build && npm run test",
-    "install": "rm -fr ./lib && tsc"
+    "install": "rm -fr ./lib && ./node_modules/.bin/tsc"
   },
   "repository": {
     "type": "git",
