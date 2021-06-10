@@ -1,5 +1,6 @@
 import { axiosCreate } from "../libs/AxiosExtra"
 import firestoreToken, { IFirestoreToken } from "./firestoreToken"
+import IBatchWrite from "./IBatchWrite"
 import IFirestoreOverRestConfig from "./IFirestoreOverRestConfig"
 import ILogger from "../ILogger"
 import parseDocument from "./parseDocument"
@@ -17,11 +18,6 @@ const defaultConfig:IFirestoreOverRestConfig = {
     apiUrl:'https://firestore.googleapis.com',
     isUnitTesting:false,
     softLogErrors:false,
-}
-
-interface IBatchWrite {
-    updateDocuments:any[]
-    createDocuments?:any[]
 }
 
 class FirestoreOverRest {

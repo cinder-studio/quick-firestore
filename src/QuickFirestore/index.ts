@@ -1,4 +1,5 @@
 import FirestoreOverRest from "../FirestoreOverRest"
+import IBatchWrite from "../FirestoreOverRest/IBatchWrite"
 import IQuickFirestoreConfig from "./IQuickFirestoreConfig"
 import * as short from "short-uuid"
 import QuickQueryBuilder from "../QuickQuery"
@@ -137,6 +138,19 @@ class QuickFirestore {
         const validatedQueryObjs = queryObjs.map(queryObj=>this.config.overrideQueryValidator(queryObj, options))
         //execute
         return Promise.all(validatedQueryObjs.map(validatedQueryObj=>this.restyFirestore.query(validatedQueryObj)))
+    }
+
+    /**
+        BatchWritesAtomic
+
+        Run a batch of writes atomically.
+
+        Execute blindly. Trust the client.
+    */
+    public batchWriteAtomic = (options:IBatchWrite) : Promise<any> => {
+        //execute blindly, trust the client
+        // pass the promise stratight through
+        return this.restyFirestore.batchWriteAtomic(options)
     }
 
 }
