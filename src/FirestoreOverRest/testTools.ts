@@ -31,3 +31,9 @@ export const FSDocument = {
     fromObj: objToFsDocument,
     fromArr: arrToFsDocuments
 }
+
+export const MockFsQueryResponse = {
+    fromArr: (arr:any[]) => ({
+        data: FSDocument.fromArr(arr)
+    })
+}
