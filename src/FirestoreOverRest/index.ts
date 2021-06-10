@@ -19,6 +19,11 @@ const defaultConfig:IFirestoreOverRestConfig = {
     softLogErrors:false,
 }
 
+interface IBatchWrite {
+    updateDocuments:any[]
+    createDocuments?:any[]
+}
+
 class FirestoreOverRest {
 
     public config:IFirestoreOverRestConfig
@@ -283,6 +288,102 @@ class FirestoreOverRest {
                     statusCode: e.response.status,
                     message: e.response.statusText,
                     callType: 'executeUpdateBlindly',
+                    tokenDelayMs: tokenCreatedTs - startTs,
+                    queryDelayMs: queryFinishedTs - tokenCreatedTs,
+                }, e.response.data)
+            }
+            else {
+                this.logger.error({
+                    statusCode: '500',
+                    message: 'please check server logs for details of this error',
+                    tokenDelayMs: tokenCreatedTs - startTs,
+                    queryDelayMs: queryFinishedTs - tokenCreatedTs,
+                }, e)
+            }
+            throw e
+        }
+    }
+
+    /**
+        Batch Write (Atomic)
+
+        Execute a batch of writes ATOMICALLY
+
+        This operation runs without any additional validations. Trust the caller.
+    */
+    public batchWriteAtomic = async (options:IBatchWrite): Promise<any> => {
+
+        const { token, startTs, tokenCreatedTs } = firestoreToken(this.config)
+
+        const { updateDocuments, createDocuments } = options
+
+        const updateWrites = updateDocuments.map(updateDoc => {
+            const collection = updateDoc.collection
+            const id = updateDoc.id
+            const cleanUpdateDoc = {...updateDoc}; {
+                delete(cleanUpdateDoc.collection)
+                delete(cleanUpdateDoc.id)
+            }
+            return {
+                currentDocument: { exists: true, /* LATER? updateTime:, */ },
+                updateMask: typedValues.encodeUpdateMask(cleanUpdateDoc),
+                update: {
+                    name: `projects/${this.config.projectName}/databases/${this.config.databaseName}/documents/${collection}/${id}`,
+                    ...typedValues.encodeDocument(id, cleanUpdateDoc)
+                },
+                //updateTransforms:, //transform:, //delete:,
+            }
+        })
+
+        const createWrites = !createDocuments ? [] : createDocuments.map(createDoc => {
+            const collection = createDoc.collection
+            const id = createDoc.id
+            const cleanCreateDoc = {...createDoc}; {
+                delete(cleanCreateDoc.collection)
+                delete(cleanCreateDoc.id)
+            }
+            return {
+                currentDocument: { exists: false, /* LATER? updateTime:, */ },
+                update: {
+                    name: `projects/${this.config.projectName}/databases/${this.config.databaseName}/documents/${collection}/${id}`,
+                    ...typedValues.encodeDocument(id, cleanCreateDoc)
+                },
+                //updateTransforms:, //transform:, //delete:, //updateMask:,
+            }
+        })
+
+        try {
+
+            const url = `${this.config.apiUrl}/v1/projects/${this.config.projectName}/databases/${this.config.databaseName}/documents:commit`
+            const data = {
+                // DO NOT PASS. THIS IS A BATCH WRITE -- transaction: transactionId,
+                writes: [ ...updateWrites, ...createWrites ],
+            }
+            const result = await this.axios.post(
+                url,
+                data,
+                { headers: { Authorization: `Bearer ${token}` } }
+            )
+
+            const queryFinishedTs = Date.now()
+
+            if((queryFinishedTs - startTs) > 1200) {
+                this.logger.warn('long QuickFirestore batchWriteAtomic', `${queryFinishedTs - startTs}ms`, {
+                    tokenDelayMs: tokenCreatedTs - startTs,
+                    queryDelayMs: queryFinishedTs - tokenCreatedTs
+                }, JSON.stringify(data))
+            }
+
+            return result.data
+
+        }
+        catch (e) {
+            const queryFinishedTs = Date.now()
+            if(e.response) {
+                this.logger.error({
+                    statusCode: e.response.status,
+                    message: e.response.statusText,
+                    callType: 'batchWriteAtomic',
                     tokenDelayMs: tokenCreatedTs - startTs,
                     queryDelayMs: queryFinishedTs - tokenCreatedTs,
                 }, e.response.data)

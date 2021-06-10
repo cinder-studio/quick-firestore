@@ -125,3 +125,70 @@ test("update", async () => {
     expect(mockedAxios.patch).toHaveBeenCalledTimes(1)
     expect(result).toBe('mockIdXrs')
 })
+
+test("batchWriteAtomic", async () => {
+    mockedAxios.post.mockImplementationOnce( async (url, data) => {
+        expect(url).toBe('https://firestore.googleapis.com/v1/projects/mockProjectZy/databases/(default)/documents:commit')
+        // expect no transactions
+        expect(data.transaction).toBe(undefined)
+        // expect 5 writes
+        expect(data.writes.length).toBe(5)
+        // 2 updates
+        expect(data.writes[0].currentDocument.exists).toBe(true)
+        expect(data.writes[1].currentDocument.exists).toBe(true)
+        // 3 creates
+        expect(data.writes[2].currentDocument.exists).toBe(false)
+        expect(data.writes[3].currentDocument.exists).toBe(false)
+        expect(data.writes[4].currentDocument.exists).toBe(false)
+// TODO this is an inaccurate mock of the true response. It may not need to be any more accurate for this test
+        return {
+            data: {
+                writeResults: data.writes.map(write=>({
+                    updateTime: '1970-01-01T00:00:01.000000Z',
+                    transformResults: [] // for this test we don't need to simulate this piece. Maybe in the future we may need to
+                })),
+                commitTime: '1970-01-01T00:00:01.000000Z'
+            }
+        }
+    })
+
+    const result = await restyFs.batchWriteAtomic({
+        updateDocuments: [
+            {
+                collection: 'mockCollectionPmq',
+                id: 'mockIdPmq',
+                mockField2: 'mockFieldDataPmq2',
+                mockField3: 'mockFieldDataPmq3',
+            },
+            {
+                collection: 'mockCollectionPmq',
+                id: 'mockIdPmq2',
+                mockField2: 'mockFieldDataPmq2-2',
+                mockField3: 'mockFieldDataPmq2-3',
+            }
+        ],
+        createDocuments: [
+            {
+                collection: 'mockCollectionPmq',
+                id: 'mockIdPmq3',
+                mockField2: 'mockFieldDataPmq3-2',
+                mockField3: 'mockFieldDataPmq3-3',
+            },
+            {
+                collection: 'mockCollectionPmq',
+                id: 'mockIdPmq4',
+                mockField2: 'mockFieldDataPmq4-2',
+                mockField3: 'mockFieldDataPmq4-3',
+            },
+            {
+                collection: 'mockCollectionPmq',
+                id: 'mockIdPmq5',
+                mockField2: 'mockFieldDataPmq5-2',
+                mockField3: 'mockFieldDataPmq5-3',
+            }
+        ]
+    })
+
+    expect(mockedAxios.post).toHaveBeenCalledTimes(1)
+    expect(result.writeResults.length).toBe(5)
+})
