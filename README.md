@@ -13,10 +13,10 @@ We needed to be faster. This library takes advantage of Google's Firestore Rest 
 Implementation
 --------------
 
-MIT Licensed
-Typescript
-Minimal Dependencies (Axios is the largest)
-Builds to es6
+MIT Licensed,
+Typescript,
+Minimal Dependencies (Axios is the largest),
+Builds to es6,
 Jest for unit testing.
 
 Basic Usage
