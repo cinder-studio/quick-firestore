@@ -3,6 +3,26 @@ QuickFirestore
 
 This project is not yet ready for NPM. You are welcome to use it.
 
+Background
+----------
+
+Google's firestore library is super slow at warming up fresh instances. Up to 5 seconds. As documented here: https://github.com/ryanhornberger/firebase-functions-cold-start-bug .
+
+We needed to be faster. This library takes advantage of Google's Firestore Rest API and requires no additional warmup time.
+
+Implementation
+--------------
+
+MIT Licensed
+Typescript
+Minimal Dependencies (Axios is the largest)
+Builds to es6
+Jest for unit testing.
+
+Basic Usage
+-----------
+
+
 ```
 const QuickFs = new QuickFirestore({
     firestore: {
