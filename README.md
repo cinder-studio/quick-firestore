@@ -4,7 +4,7 @@ QuickFirestore
 This project is not yet ready for NPM. You are welcome to use it.
 
 ```
-const QuickFs =  = new QuickFirestore({
+const QuickFs = new QuickFirestore({
     firestore: {
         projectName:'mockProjectYx',
         jwt: {
