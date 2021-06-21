@@ -60,3 +60,7 @@ class Singleton {
 const singletonInstance = new Singleton()
 
 export default singletonInstance.parseDocument
+
+export const MockFsQueryParse = {
+    parse: singletonInstance.parseDocument
+}
