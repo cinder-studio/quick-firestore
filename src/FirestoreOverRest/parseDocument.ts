@@ -62,5 +62,9 @@ const singletonInstance = new Singleton()
 export default singletonInstance.parseDocument
 
 export const MockFsQueryParse = {
-    parse: singletonInstance.parseDocument
+    parseDocData: (data) => {
+        return singletonInstance.parseDocument({
+            document: data
+        })
+    }
 }
