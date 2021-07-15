@@ -1,7 +1,7 @@
 QuickFirestore
 ==============
 
-This project is not yet ready for NPM. You are welcome to use it.
+This is a pre-protection release the documentation is not yet complete.  If you would like to contribute please contact us on github.
 
 Background
 ----------
