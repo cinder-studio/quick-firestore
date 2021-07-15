@@ -7,10 +7,8 @@
   "scripts": {
     "build": "rm -fr ./lib && tsc",
     "verify": "npm run build && npm run test",
-    "lint": "tslint --project tsconfig.json",
     "prepare": "npm run build",
-    "prepublishOnly": "npm test && npm run lint",
-    "preversion": "npm run lint",
+    "prepublishOnly": "npm test",
     "version": "git add -A src",
     "postversion": "git push && git push --tags"
   },
