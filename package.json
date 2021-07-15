@@ -5,8 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "build": "rm -fr ./lib && tsc",
-    "verify": "npm run build && npm run test",
-    "install": "rm -fr ./lib && tsc"
+    "verify": "npm run build && npm run test"
   },
   "repository": {
     "type": "git",
