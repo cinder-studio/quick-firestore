@@ -1,6 +1,6 @@
 {
   "name": "@cinder-studio/quick-firestore",
-  "version": "0.8.6",
+  "version": "0.8.7",
   "description": "Google supplied Firestore libraries are slow. This is a fast one.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
