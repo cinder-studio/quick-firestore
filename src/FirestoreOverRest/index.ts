@@ -336,7 +336,6 @@ class FirestoreOverRest {
             const id = createDoc.id
             const cleanCreateDoc = {...createDoc}; {
                 delete(cleanCreateDoc.collection)
-                delete(cleanCreateDoc.id)
             }
             return {
                 currentDocument: { exists: false, /* LATER? updateTime:, */ },
