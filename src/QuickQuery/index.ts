@@ -46,11 +46,11 @@ class QuickQuery {
             }
         }
 
-        if(operation === 'IS_NULL') {
+        if(operation === 'IS_NULL' || operation === 'IS_NOT_NULL' || operation === 'IS_NAN' || operation === 'IS_NOT_NAN' ) {
             this.query.where.compositeFilter.filters.push({
                 unaryFilter: {
                     field: { fieldPath: fieldPath },
-                    op: 'IS_NULL'
+                    op: operation
                 }
             })
         }
