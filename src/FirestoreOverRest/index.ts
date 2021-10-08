@@ -145,7 +145,7 @@ class FirestoreOverRest {
                 { headers: { Authorization: `Bearer ${token}` } }
             )
 
-            const parsedResult = parseDocument({document:result.data})
+            const parsedResult = parseDocument(result.data)
 
             const queryFinishedTs = Date.now()
 
