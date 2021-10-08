@@ -311,7 +311,7 @@ class FirestoreOverRest {
 
         const { token, startTs, tokenCreatedTs } = firestoreToken(this.config)
 
-        const { updateDocuments, createDocuments } = options
+        const { updateDocuments, createDocuments, writeDocuments } = options
 
         const updateWrites = updateDocuments.map(updateDoc => {
             const collection = updateDoc.collection
@@ -347,12 +347,28 @@ class FirestoreOverRest {
             }
         })
 
+        const overwriteWrites = !writeDocuments ? [] : writeDocuments.map(writeDoc => {
+            const collection = writeDoc.collection
+            const id = writeDoc.id
+            const cleanWriteDoc = {...writeDoc}; {
+                delete(cleanWriteDoc.collection)
+            }
+            return {
+                currentDocument: { /* LATER? updateTime:, */ },
+                update: {
+                    name: `projects/${this.config.projectName}/databases/${this.config.databaseName}/documents/${collection}/${id}`,
+                    ...typedValues.encodeDocument(id, cleanWriteDoc)
+                },
+                //updateTransforms:, //transform:, //delete:, //updateMask:,
+            }
+        })
+
         try {
 
             const url = `${this.config.apiUrl}/v1/projects/${this.config.projectName}/databases/${this.config.databaseName}/documents:commit`
             const data = {
                 // DO NOT PASS. THIS IS A BATCH WRITE -- transaction: transactionId,
-                writes: [ ...updateWrites, ...createWrites ],
+                writes: [ ...updateWrites, ...createWrites, ...overwriteWrites ],
             }
             const result = await this.axios.post(
                 url,
