@@ -19,6 +19,15 @@ Minimal Dependencies (Axios is the largest),
 Builds to es6,
 Jest for unit testing.
 
+How to deploy a new version
+---------------------------
+
+Call one of the following - [major/minor/patch]
+
+npm version patch
+npm version minor
+npm version major
+
 Basic Usage
 -----------
 
