@@ -10,7 +10,10 @@
     "verify": "npm run build && npm run test",
     "prepare": "npm run build",
     "version": "git add -A src",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "deploy-patch" "npm version patch",
+    "deploy-minor" "npm version minor",
+    "deploy-major" "npm version major"
   },
   "repository": {
     "type": "git",
