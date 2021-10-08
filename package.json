@@ -6,6 +6,7 @@
   "types": "lib/index.d.ts",
   "scripts": {
     "build": "rm -fr ./lib && tsc",
+    "test": "rm -fr ./lib && ./node_modules/.bin/jest",
     "verify": "npm run build && npm run test",
     "prepare": "npm run build",
     "version": "git add -A src",
