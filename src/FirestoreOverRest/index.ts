@@ -149,7 +149,7 @@ class FirestoreOverRest {
                 return null
             }
 
-            const parsedResult = parseDocument(result.data)
+            const parsedResult = parseDocument({document: result.data})
 
             const queryFinishedTs = Date.now()
 
