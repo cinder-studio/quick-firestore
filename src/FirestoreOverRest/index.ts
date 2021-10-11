@@ -165,16 +165,7 @@ class FirestoreOverRest {
         }
         catch (e) {
             const queryFinishedTs = Date.now()
-            if(e.response) {
-                this.logger.error({
-                    statusCode: e.response.status,
-                    message: e.response.statusText,
-                    callType: 'executeReadBlindly',
-                    tokenDelayMs: tokenCreatedTs - startTs,
-                    queryDelayMs: queryFinishedTs - tokenCreatedTs,
-                }, e.response.data)
-            }
-            else {
+            if(this.config.softLogErrors && !e.response) {
                 this.logger.error({
                     statusCode: '500',
                     message: 'please check server logs for details of this error',
