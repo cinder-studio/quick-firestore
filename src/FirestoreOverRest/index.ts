@@ -306,7 +306,7 @@ class FirestoreOverRest {
 
         const { token, startTs, tokenCreatedTs } = firestoreToken(this.config)
 
-        const { updateDocuments, createDocuments, writeDocuments } = options
+        const { updateDocuments, createDocuments, writeDocuments, longQueryLimitMs } = options
 
         const updateWrites = updateDocuments.map(updateDoc => {
             const collection = updateDoc.collection
@@ -373,7 +373,8 @@ class FirestoreOverRest {
 
             const queryFinishedTs = Date.now()
 
-            if((queryFinishedTs - startTs) > 1200) {
+            let currentLongQueryLimit = longQueryLimitMs ? longQueryLimitMs : 1200
+            if((queryFinishedTs - startTs) > currentLongQueryLimit) {
                 this.logger.warn('long QuickFirestore batchWriteAtomic', `${queryFinishedTs - startTs}ms`, {
                     tokenDelayMs: tokenCreatedTs - startTs,
                     queryDelayMs: queryFinishedTs - tokenCreatedTs
