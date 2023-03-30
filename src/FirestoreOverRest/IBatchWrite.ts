@@ -1,6 +1,7 @@
 interface IBatchWrite {
-    updateDocuments:any[]
+    updateDocuments?:any[]
     createDocuments?:any[]
+    updateOrCreateDocuments?:any[]
     writeDocuments?:any[]
     longQueryLimitMs?:number
 }

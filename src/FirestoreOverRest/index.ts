@@ -306,9 +306,9 @@ class FirestoreOverRest {
 
         const { token, startTs, tokenCreatedTs } = firestoreToken(this.config)
 
-        const { updateDocuments, createDocuments, writeDocuments, longQueryLimitMs } = options
+        const { updateDocuments, createDocuments, writeDocuments, updateOrCreateDocuments, longQueryLimitMs } = options
 
-        const updateWrites = updateDocuments.map(updateDoc => {
+        const updateWrites = !updateDocuments ? [] : updateDocuments.map(updateDoc => {
             const collection = updateDoc.collection
             const id = updateDoc.id
             const cleanUpdateDoc = {...updateDoc}; {
@@ -358,12 +358,29 @@ class FirestoreOverRest {
             }
         })
 
+        const updateOrCreateWrites = !updateOrCreateDocuments ? [] : updateOrCreateDocuments.map(writeDoc => {
+            const collection = writeDoc.collection
+            const id = writeDoc.id
+            const cleanWriteDoc = {...writeDoc}; {
+                delete(cleanWriteDoc.collection)
+            }
+            return {
+                currentDocument: { /* LATER? updateTime:, */ },
+                updateMask: typedValues.encodeUpdateMask(cleanWriteDoc),
+                update: {
+                    name: `projects/${this.config.projectName}/databases/${this.config.databaseName}/documents/${collection}/${id}`,
+                    ...typedValues.encodeDocument(id, cleanWriteDoc)
+                },
+                //updateTransforms:, //transform:, //delete:, //updateMask:,
+            }
+        })
+
         try {
 
             const url = `${this.config.apiUrl}/v1/projects/${this.config.projectName}/databases/${this.config.databaseName}/documents:commit`
             const data = {
                 // DO NOT PASS. THIS IS A BATCH WRITE -- transaction: transactionId,
-                writes: [ ...updateWrites, ...createWrites, ...overwriteWrites ],
+                writes: [ ...updateWrites, ...createWrites, ...overwriteWrites, ...updateOrCreateWrites ],
             }
             const result = await this.axios.post(
                 url,
