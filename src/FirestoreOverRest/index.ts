@@ -306,7 +306,7 @@ class FirestoreOverRest {
 
         const { token, startTs, tokenCreatedTs } = firestoreToken(this.config)
 
-        const { updateDocuments, createDocuments, writeDocuments, updateOrCreateDocuments, longQueryLimitMs } = options
+        const { updateDocuments, createDocuments, writeDocuments, updateOrCreateDocuments, longQueryLimitMs, excludeFromUpdateMask } = options
 
         const updateWrites = !updateDocuments ? [] : updateDocuments.map(updateDoc => {
             const collection = updateDoc.collection
@@ -366,7 +366,7 @@ class FirestoreOverRest {
             }
             return {
                 currentDocument: { /* LATER? updateTime:, */ },
-                updateMask: typedValues.encodeUpdateMask(cleanWriteDoc),
+                updateMask: typedValues.encodeUpdateMask(cleanWriteDoc, {excludeFromUpdateMask: excludeFromUpdateMask}),
                 update: {
                     name: `projects/${this.config.projectName}/databases/${this.config.databaseName}/documents/${collection}/${id}`,
                     ...typedValues.encodeDocument(id, cleanWriteDoc)

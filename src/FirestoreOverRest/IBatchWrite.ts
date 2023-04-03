@@ -3,6 +3,7 @@ interface IBatchWrite {
     createDocuments?:any[]
     updateOrCreateDocuments?:any[]
     writeDocuments?:any[]
-    longQueryLimitMs?:number
+    longQueryLimitMs?:number,
+    excludeFromUpdateMask?:any[]
 }
 export default IBatchWrite

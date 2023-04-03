@@ -78,7 +78,9 @@ class Singleton {
             fieldPaths: ((()=>{
                 const fieldMask = []
                 for(const key of Object.keys(value)) {
-                    fieldMask.push(key)
+                    if (!(options && options.excludeFromUpdateMask && options.excludeFromUpdateMask.includes(key))) {
+                        fieldMask.push(key)
+                    }
                 }
                 return fieldMask
             })())
