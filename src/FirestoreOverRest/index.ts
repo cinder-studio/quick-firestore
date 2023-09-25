@@ -295,6 +295,65 @@ class FirestoreOverRest {
         }
     }
 
+
+    /**
+        DELETE
+
+        Normaly when we delete we do a soft delete 
+        
+        This is for the rare cases when you acculy want to remove something form the database
+
+    */
+    public dangerouslyDELETE = async (collection: string, id: string): Promise<any> => {
+
+        const { token, startTs, tokenCreatedTs } = firestoreToken(this.config)
+
+        try {
+
+
+            const url = `${this.config.apiUrl}/v1/projects/${this.config.projectName}/databases/${this.config.databaseName}/documents/${collection}/${id}`
+
+            await this.axios.delete(
+                url,
+                { headers: { Authorization: `Bearer ${token}` } }
+            )
+
+            const resultData = id
+
+            const queryFinishedTs = Date.now()
+
+            if ((queryFinishedTs - startTs) > 1200) {
+                this.logger.warn('long QuickFirestore dangerously delete', `${queryFinishedTs - startTs}ms`, {
+                    tokenDelayMs: tokenCreatedTs - startTs,
+                    queryDelayMs: queryFinishedTs - tokenCreatedTs
+                }, collection)
+            }
+
+            return resultData
+        }
+        catch (e) {
+            const queryFinishedTs = Date.now()
+            if (e.response) {
+                this.logger.error({
+                    statusCode: e.response.status,
+                    message: e.response.statusText,
+                    callType: 'executeUpdateBlindly',
+                    tokenDelayMs: tokenCreatedTs - startTs,
+                    queryDelayMs: queryFinishedTs - tokenCreatedTs,
+                }, e.response.data)
+            }
+            else {
+                this.logger.error({
+                    statusCode: '500',
+                    message: 'please check server logs for details of this error',
+                    tokenDelayMs: tokenCreatedTs - startTs,
+                    queryDelayMs: queryFinishedTs - tokenCreatedTs,
+                }, e)
+            }
+            throw e
+        }
+    }
+
     /**
         Batch Write (Atomic)
 
