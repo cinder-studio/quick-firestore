@@ -140,6 +140,19 @@ class QuickFirestore {
         return Promise.all(validatedQueryObjs.map(validatedQueryObj=>this.restyFirestore.query(validatedQueryObj)))
     }
 
+
+    /**
+        DELETE
+
+        Normaly when we delete we do a soft delete 
+        
+        This is for the rare cases when you acculy want to remove something form the database
+
+    */
+    public dangerouslyDELETE = async (collection: string, id: string): Promise<any> => {
+        // Delet the document at that id and collection
+        return await this.restyFirestore.dangerouslyDELETE(collection, id)
+    }
     /**
         BatchWritesAtomic
 
